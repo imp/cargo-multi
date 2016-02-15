@@ -2,14 +2,8 @@
 name = "cargo-multi"
 version = "0.0.0"
 dependencies = [
- "argparse 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "argparse"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "kernel32-sys"
