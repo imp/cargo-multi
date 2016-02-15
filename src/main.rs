@@ -50,7 +50,13 @@ impl CargoMultiCmd {
     }
 
     fn announce(&self) -> &Self {
-        println!("Executing cargo {}", self.banner);
+        let mut line = String::new();
+        for _ in 0..self.banner.len() {
+            line.push('-');
+        }
+        println!("{}", line);
+        println!("{}", self.banner);
+        println!("{}", line);
         self
     }
 
@@ -80,6 +86,7 @@ fn ident_text(text: String) -> String {
     for line in text.lines() {
         out.push_str("        ");
         out.push_str(line);
+        out.push('\n');
     }
     out
 }
@@ -89,8 +96,8 @@ fn is_crate(entry: &DirEntry) -> bool {
 }
 
 fn main() {
-    let args = env::args().skip(1).collect();
-    let cwd = env::current_dir().unwrap().join("..");
+    let args = env::args().skip(2).collect();
+    let cwd = env::current_dir().unwrap();
     let mut multi = CargoMultiCmd::new("cargo", args);
 
     multi.set_top_dir(cwd);
