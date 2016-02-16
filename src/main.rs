@@ -81,7 +81,7 @@ impl CargoMultiCmd {
 fn print_ident(buf: Vec<u8>)
 {
     // ::<'a>(v: &'a [u8])
-    for line in String::from_utf8_lossy(buf.as_slice()).lines() {
+    for line in String::from_utf8_lossy(&buf[..]).lines() {
         println!("        {}", line);
     }
 }
