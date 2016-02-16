@@ -68,11 +68,9 @@ impl CargoMultiCmd {
                           .output()
                           .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
             if out.status.success() {
-                println!("{}",
-                         ident_text(String::from_utf8_lossy(&out.stdout).into_owned()));
+                print_ident(out.stdout);
             } else {
-                println!("{}",
-                         ident_text(String::from_utf8_lossy(&out.stderr).into_owned()));
+                print_ident(out.stderr);
             }
             println!("");
         }
@@ -80,15 +78,12 @@ impl CargoMultiCmd {
     }
 }
 
-fn ident_text(text: String) -> String {
-    let mut out = String::new();
-
-    for line in text.lines() {
-        out.push_str("        ");
-        out.push_str(line);
-        out.push('\n');
+fn print_ident(buf: Vec<u8>)
+{
+    // ::<'a>(v: &'a [u8])
+    for line in String::from_utf8_lossy(buf.as_slice()).lines() {
+        println!("        {}", line);
     }
-    out
 }
 
 fn is_crate(entry: &DirEntry) -> bool {
