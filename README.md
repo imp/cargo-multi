@@ -3,7 +3,7 @@
 master: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/master.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 develop: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/develop.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 
-Extends cargo to execute the given command on multiple crates
+Extends cargo to execute the given command on multiple crates. Inspired by ```git multi```.
 
 **How to use**
 
