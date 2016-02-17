@@ -1,6 +1,6 @@
 [root]
 name = "cargo-multi"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "walkdir 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
