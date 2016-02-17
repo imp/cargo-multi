@@ -17,7 +17,7 @@ impl MultiCmd {
     fn new(cmd: &str, args: Vec<String>) -> Self {
 
         let mut command = Command::new(cmd);
-        let mut banner = String::from("Executing ") + &cmd ;
+        let mut banner = String::from("Executing ") + &cmd;
         for arg in args {
             command.arg(OsString::from(&arg));
             banner = banner + " " + &arg;
