@@ -1,4 +1,3 @@
-
 extern crate walkdir;
 
 use std::ffi::OsString;
@@ -7,14 +6,14 @@ use std::path::PathBuf;
 use std::process::Command;
 use walkdir::{DirEntry, WalkDir, WalkDirIterator};
 
-struct CargoMultiCmd {
+struct MultiCmd {
     command: Command,
     banner: String,
     top_directory: PathBuf,
     directories: Vec<PathBuf>,
 }
 
-impl CargoMultiCmd {
+impl MultiCmd {
     fn new(cmd: &str, args: Vec<String>) -> Self {
 
         let mut command = Command::new(cmd);
@@ -25,7 +24,7 @@ impl CargoMultiCmd {
             banner = banner + " " + &arg;
         }
 
-        CargoMultiCmd {
+        MultiCmd {
             command: command,
             banner: banner,
             top_directory: PathBuf::new(),
@@ -93,7 +92,7 @@ fn is_crate(entry: &DirEntry) -> bool {
 fn main() {
     let args = env::args().skip(2).collect();
     let cwd = env::current_dir().unwrap();
-    let mut multi = CargoMultiCmd::new("cargo", args);
+    let mut multi = MultiCmd::new("cargo", args);
 
     multi.set_top_dir(cwd);
     multi.collect_crate_candidates();
