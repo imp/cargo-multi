@@ -10,3 +10,10 @@ version = "0.2.0"
 
 [dependencies]
 walkdir = "0.1.5"
+
+[dependencies.clippy]
+optional = true
+version = "0.0.42"
+
+[features]
+default=[]

@@ -1,3 +1,6 @@
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+
 extern crate walkdir;
 
 use std::ffi::OsString;
@@ -55,6 +58,6 @@ fn main() {
             println!("{}:", p.display());
             cmd.current_dir(p).output().unwrap()
         })
-        .map(|o| report_output(o))
+        .map(report_output)
         .last();
 }
