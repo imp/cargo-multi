@@ -5,6 +5,7 @@ extern crate walkdir;
 
 use std::ffi::OsString;
 use std::env;
+use std::path::PathBuf;
 use std::process::{Command, Output};
 use walkdir::WalkDirIterator;
 
@@ -22,6 +23,11 @@ fn print_ident(buf: Vec<u8>) {
     for line in String::from_utf8_lossy(&buf[..]).lines() {
         println!("        {}", line);
     }
+}
+
+fn announce_path(path: PathBuf) -> PathBuf {
+    println!("{}:", path.file_name().unwrap().to_str().unwrap());
+    path
 }
 
 fn report_output(output: Output) {
@@ -54,10 +60,8 @@ fn main() {
         .into_iter()
         .filter_entry(|e| e.path().join("Cargo.toml").exists())
         .map(|e| e.ok().unwrap().path().to_path_buf())
-        .map(|p| {
-            println!("{}:", p.display());
-            cmd.current_dir(p).output().unwrap()
-        })
+        .map(announce_path)
+        .map(|p| cmd.current_dir(p).output().unwrap())
         .map(report_output)
         .last();
 }

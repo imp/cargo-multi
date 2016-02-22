@@ -1,3 +1,7 @@
+# 0.3.0
+
+Display short crate path instead of full path
+
 # 0.2.1
 
 Fix clippy warning
