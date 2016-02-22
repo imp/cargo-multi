@@ -7,7 +7,7 @@ use std::ffi::OsString;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
-use walkdir::WalkDirIterator;
+use walkdir::{DirEntry, WalkDirIterator};
 
 fn announce(banner: &str) {
     let mut line = String::new();
@@ -47,6 +47,7 @@ const MAX_DEPTH: usize = 1;
 fn main() {
     let mut cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
+
     for arg in env::args().skip(2) {
         cmd.arg(OsString::from(&arg));
         banner = banner + " " + &arg;
@@ -54,15 +55,19 @@ fn main() {
 
     announce(&banner);
 
+    let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
+    let to_path_buf = |e: DirEntry| e.path().to_path_buf();
+    let execute = move |p| cmd.current_dir(p).output().map(report_output);
+
     let cwd = env::current_dir().unwrap();
     walkdir::WalkDir::new(cwd)
         .min_depth(MIN_DEPTH)
         .max_depth(MAX_DEPTH)
         .into_iter()
-        .filter_entry(|e| e.path().join("Cargo.toml").exists())
+        .filter_entry(is_crate)
         .filter_map(|e| e.ok())
-        .map(|e| e.path().to_path_buf())
+        .map(to_path_buf)
         .inspect(display_path)
-        .map(|p| cmd.current_dir(p).output().map(report_output))
+        .map(execute)
         .last();
 }
