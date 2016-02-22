@@ -26,7 +26,9 @@ fn print_ident(buf: Vec<u8>) {
 }
 
 fn announce_path(path: PathBuf) -> PathBuf {
-    println!("{}:", path.file_name().unwrap().to_str().unwrap());
+    path.file_name()
+        .and_then(|p| p.to_str())
+        .map(|p| println!("{}:", p));
     path
 }
 
@@ -59,9 +61,9 @@ fn main() {
         .max_depth(MAX_DEPTH)
         .into_iter()
         .filter_entry(|e| e.path().join("Cargo.toml").exists())
-        .map(|e| e.ok().unwrap().path().to_path_buf())
+        .filter_map(|e| e.ok())
+        .map(|e| e.path().to_path_buf())
         .map(announce_path)
-        .map(|p| cmd.current_dir(p).output().unwrap())
-        .map(report_output)
+        .map(|p| cmd.current_dir(p).output().map(report_output))
         .last();
 }
