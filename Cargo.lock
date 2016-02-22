@@ -1,14 +1,14 @@
 [root]
 name = "cargo-multi"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
- "clippy 0.0.42 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clippy 0.0.43 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "clippy"
-version = "0.0.42"
+version = "0.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "regex-syntax 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
