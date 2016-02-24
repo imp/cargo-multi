@@ -1,36 +1,17 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-extern crate docopt;
 extern crate rustc_serialize;
 extern crate walkdir;
+extern crate clap;
 
 use std::ffi::OsString;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
-use docopt::Docopt;
 use walkdir::{DirEntry, WalkDirIterator};
+use clap::{Arg, App, SubCommand, AppSettings};
 
-const USAGE: &'static str = "
-Run cargo command on multiple crates
-
-Usage:
-    cargo multi (-v | --version)
-    cargo multi (-h | --help)
-    cargo multi [options] [--] <cmd>...
-
-Options:
-    -v --version    Show version.
-    -h --help       Show this help.
-";
-
-#[derive(Debug, RustcDecodable)]
-struct Args {
-    flag_version: bool,
-    cmd_multi: String,
-    arg_cmd: Vec<String>,
-}
 
 fn announce(banner: &str) {
     let mut line = String::new();
@@ -72,23 +53,31 @@ const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
 fn main() {
-    let version = Some(env!("CARGO_PKG_VERSION").to_owned());
-    let setup_parser = |d: Docopt| d.version(version).options_first(true);
 
-    let args: Args = Docopt::new(USAGE)
-                         .map(setup_parser)
-                         .and_then(|d| d.decode())
-                         //.unwrap();
-                         .unwrap_or_else(|e| e.exit());
 
-    println!("{:?}", args);
+    let version = env!("CARGO_PKG_VERSION");
+
+    let app_m = App::new("cargo multi")
+        .setting(AppSettings::SubcommandRequired)
+        .setting(AppSettings::ArgRequiredElseHelp)
+        .subcommand(
+            SubCommand::with_name("multi")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::TrailingVarArg)
+                .about("Run cargo command on multiple crates")
+                .version(version)
+                .arg(Arg::from_usage("<cmd>... 'cargo command to run'"))
+        )
+        .get_matches();
+
+    let arg_cmd = app_m.subcommand_matches("multi").unwrap().values_of("cmd").unwrap();
 
     let mut cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
-    for arg in args.arg_cmd {
+    for arg in arg_cmd {
         cmd.arg(OsString::from(&arg));
-        banner = banner + " " + &arg;
+        banner = banner + " " + arg;
     }
 
     announce(&banner);
