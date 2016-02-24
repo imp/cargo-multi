@@ -10,6 +10,7 @@ version = "0.3.1"
 
 [dependencies]
 docopt = "0.6.78"
+rustc-serialize = "0.3.18"
 walkdir = "0.1.5"
 
 [dependencies.clippy]

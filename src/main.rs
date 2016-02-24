@@ -1,13 +1,36 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
+extern crate docopt;
+extern crate rustc_serialize;
 extern crate walkdir;
 
 use std::ffi::OsString;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
+use docopt::Docopt;
 use walkdir::{DirEntry, WalkDirIterator};
+
+const USAGE: &'static str = "
+Run cargo command on multiple crates
+
+Usage:
+    cargo multi (-v | --version)
+    cargo multi (-h | --help)
+    cargo multi [options] [--] <cmd>...
+
+Options:
+    -v --version    Show version.
+    -h --help       Show this help.
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args {
+    flag_version: bool,
+    cmd_multi: String,
+    arg_cmd: Vec<String>,
+}
 
 fn announce(banner: &str) {
     let mut line = String::new();
@@ -37,6 +60,10 @@ fn report_output(output: Output) {
     } else {
         print_ident(output.stderr);
     }
+    // match output.status.success() {
+    //     true => print_ident(output.stdout),
+    //     false => print_ident(output.stderr),
+    // }
     println!("");
 }
 
@@ -45,10 +72,21 @@ const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
 fn main() {
+    let version = Some(env!("CARGO_PKG_VERSION").to_owned());
+    let setup_parser = |d: Docopt| d.version(version).options_first(true);
+
+    let args: Args = Docopt::new(USAGE)
+                         .map(setup_parser)
+                         .and_then(|d| d.decode())
+                         //.unwrap();
+                         .unwrap_or_else(|e| e.exit());
+
+    println!("{:?}", args);
+
     let mut cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
-    for arg in env::args().skip(2) {
+    for arg in args.arg_cmd {
         cmd.arg(OsString::from(&arg));
         banner = banner + " " + &arg;
     }
