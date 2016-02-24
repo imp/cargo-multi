@@ -69,5 +69,5 @@ fn main() {
         .map(to_path_buf)
         .inspect(display_path)
         .map(execute)
-        .last();
+        .last(); // XXX Non-idiomatic perhaps, but gets the job done. May need to revisit later.
 }
