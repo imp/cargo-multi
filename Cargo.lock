@@ -2,18 +2,31 @@
 name = "cargo-multi"
 version = "0.3.1"
 dependencies = [
+ "clap 2.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "clippy 0.0.44 (registry+https://github.com/rust-lang/crates.io-index)",
- "docopt 0.6.78 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
-name = "aho-corasick"
-version = "0.5.1"
+name = "ansi_term"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "bitflags"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "clap"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "memchr 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ansi_term 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bitflags 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strsim 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vec_map 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -27,16 +40,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "docopt"
-version = "0.6.78"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "regex 0.1.54 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "strsim 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "kernel32-sys"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -46,33 +49,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "libc"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "memchr"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "nom"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "regex"
-version = "0.1.54"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "aho-corasick 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "memchr 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex-syntax 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "utf8-ranges 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "regex-syntax"
@@ -94,7 +73,7 @@ dependencies = [
 
 [[package]]
 name = "strsim"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -103,8 +82,8 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "utf8-ranges"
-version = "0.1.3"
+name = "vec_map"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
