@@ -6,7 +6,7 @@ keywords = ["cargo", "subcommand", "multi"]
 license = "Apache-2.0/MIT"
 name = "cargo-multi"
 repository = "https://github.com/imp/cargo-multi.git"
-version = "0.3.0"
+version = "0.3.1"
 
 [dependencies]
 walkdir = "0.1.5"
