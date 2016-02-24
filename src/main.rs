@@ -9,8 +9,8 @@ use std::ffi::OsString;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
+use clap::{App, SubCommand, AppSettings};
 use walkdir::{DirEntry, WalkDirIterator};
-use clap::{Arg, App, SubCommand, AppSettings};
 
 
 fn announce(banner: &str) {
@@ -56,28 +56,27 @@ fn main() {
 
 
     let version = env!("CARGO_PKG_VERSION");
-
-    let app_m = App::new("cargo multi")
-        .setting(AppSettings::SubcommandRequired)
-        .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(
-            SubCommand::with_name("multi")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::TrailingVarArg)
-                .about("Run cargo command on multiple crates")
-                .version(version)
-                .arg(Arg::from_usage("<cmd>... 'cargo command to run'"))
-        )
-        .get_matches();
-
-    let arg_cmd = app_m.subcommand_matches("multi").unwrap().values_of("cmd").unwrap();
-
     let mut cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
-    for arg in arg_cmd {
-        cmd.arg(OsString::from(&arg));
-        banner = banner + " " + arg;
+    let matches = App::new("cargo-multi")
+                      .version(version)
+                      .about("Run cargo command on multiple crates")
+                      .setting(AppSettings::SubcommandRequired)
+                      .setting(AppSettings::ArgRequiredElseHelp)
+                      .setting(AppSettings::VersionlessSubcommands)
+                      .subcommand(SubCommand::with_name("multi")
+                                      .setting(AppSettings::ArgRequiredElseHelp)
+                                      .setting(AppSettings::TrailingVarArg)
+                                      .arg_from_usage("<cmd>... 'cargo command to run'"))
+                      .get_matches();
+
+    if let Some(arg_cmd) = matches.subcommand_matches("multi")
+                                  .and_then(|m| m.values_of("cmd")) {
+        for arg in arg_cmd {
+            cmd.arg(OsString::from(&arg));
+            banner = banner + " " + arg;
+        }
     }
 
     announce(&banner);
