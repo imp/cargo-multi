@@ -1,3 +1,7 @@
+# 0.4.0
+
+Add usage and help text (Thanks ayoshi)
+
 # 0.3.0
 
 Display short crate path instead of full path
