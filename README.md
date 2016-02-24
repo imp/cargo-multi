@@ -29,36 +29,62 @@ $ cargo multi update
 ----------------------
 Executing cargo update
 ----------------------
-/Users/cyrilp/dev/rust/bep-rs:
+cargo:
         Updating registry `https://github.com/rust-lang/crates.io-index`
-        Updating aho-corasick v0.4.1 -> v0.5.0
-        Updating regex v0.1.48 -> v0.1.51
-        Updating regex-syntax v0.2.2 -> v0.2.3
-          Adding utf8-ranges v0.1.3
+        Updating git2 v0.3.5 -> v0.3.4
+        Removing libgit2-sys v0.4.0
+        Updating nom v1.2.0 -> v1.2.1
+        Updating num_cpus v0.2.10 -> v0.2.11
+        Updating regex v0.1.52 -> v0.1.54
+        Updating regex-syntax v0.2.3 -> v0.2.5
+        Updating tar v0.4.3 -> v0.4.4
+        Removing unicode-bidi v0.2.3
+        Removing unicode-normalization v0.1.2
+        Removing url v0.5.5
 
-/Users/cyrilp/dev/rust/cargo-multi:
-        Updating registry `https://github.com/rust-lang/crates.io-index`
-
-/Users/cyrilp/dev/rust/elm:
-        Updating registry `https://github.com/rust-lang/crates.io-index`
-
-/Users/cyrilp/dev/rust/gitlab-rs:
-        Updating registry `https://github.com/rust-lang/crates.io-index`
-        Updating gcc v0.3.23 -> v0.3.24
-
-/Users/cyrilp/dev/rust/hyper:
+cargo-multi:
         Updating registry `https://github.com/rust-lang/crates.io-index`
 
-/Users/cyrilp/dev/rust/json:
+elm:
         Updating registry `https://github.com/rust-lang/crates.io-index`
 
-/Users/cyrilp/dev/rust/rass:
+gitlab-rs:
         Updating registry `https://github.com/rust-lang/crates.io-index`
 
-/Users/cyrilp/dev/rust/requests-rs:
+hyper:
         Updating registry `https://github.com/rust-lang/crates.io-index`
-        Updating gcc v0.3.23 -> v0.3.24
+        Updating num_cpus v0.2.10 -> v0.2.11
+        Updating regex v0.1.52 -> v0.1.54
+        Updating regex-syntax v0.2.3 -> v0.2.5
+        Updating serde v0.6.14 -> v0.6.15
+        Updating unicase v1.2.1 -> v1.3.0
 
-/Users/cyrilp/dev/rust/trust:
+json:
         Updating registry `https://github.com/rust-lang/crates.io-index`
+        Updating serde v0.6.14 -> v0.6.15
+
+rass:
+        Updating registry `https://github.com/rust-lang/crates.io-index`
+
+requests-rs:
+        Updating registry `https://github.com/rust-lang/crates.io-index`
+        Updating num_cpus v0.2.10 -> v0.2.11
+        Updating serde v0.6.14 -> v0.6.15
+        Updating unicase v1.2.1 -> v1.3.0
+
+syncthing-rs:
+        Updating registry `https://github.com/rust-lang/crates.io-index`
+        Updating regex v0.1.53 -> v0.1.54
+        Updating regex-syntax v0.2.4 -> v0.2.5
+
+trust:
+        Updating registry `https://github.com/rust-lang/crates.io-index`
+        Removing aho-corasick v0.5.1
+        Removing docopt v0.6.78
+        Removing memchr v0.1.10
+        Removing regex v0.1.54
+        Removing regex-syntax v0.2.5
+        Removing rustc-serialize v0.3.18
+        Removing strsim v0.3.0
+        Removing utf8-ranges v0.1.3
 ```
