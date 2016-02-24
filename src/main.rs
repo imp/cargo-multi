@@ -1,7 +1,6 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-extern crate rustc_serialize;
 extern crate walkdir;
 extern crate clap;
 
