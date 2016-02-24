@@ -1,8 +1,9 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-extern crate walkdir;
+#[macro_use]
 extern crate clap;
+extern crate walkdir;
 
 use std::ffi::OsString;
 use std::env;
@@ -53,18 +54,17 @@ const MAX_DEPTH: usize = 1;
 
 fn main() {
 
-
-    let version = env!("CARGO_PKG_VERSION");
     let mut cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
-    let matches = App::new("cargo-multi")
-                      .version(version)
+    let matches = App::new(CARGO)
+                      .bin_name(CARGO)
+                      .version(crate_version!())
                       .about("Run cargo command on multiple crates")
                       .setting(AppSettings::SubcommandRequired)
                       .setting(AppSettings::ArgRequiredElseHelp)
-                      .setting(AppSettings::VersionlessSubcommands)
                       .subcommand(SubCommand::with_name("multi")
+                                      .version(crate_version!())
                                       .setting(AppSettings::ArgRequiredElseHelp)
                                       .setting(AppSettings::TrailingVarArg)
                                       .arg_from_usage("<cmd>... 'cargo command to run'"))
