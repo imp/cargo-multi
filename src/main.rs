@@ -5,7 +5,6 @@
 extern crate clap;
 extern crate walkdir;
 
-use std::ffi::OsString;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
@@ -75,7 +74,7 @@ fn main() {
     if let Some(arg_cmd) = matches.subcommand_matches("multi")
                                   .and_then(|m| m.values_of("cmd")) {
         for arg in arg_cmd {
-            cmd.arg(OsString::from(&arg));
+            cmd.arg(arg);
             banner = banner + " " + arg;
         }
     }
