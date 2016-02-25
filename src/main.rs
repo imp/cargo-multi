@@ -41,6 +41,8 @@ fn report_output(output: Output) {
     } else {
         print_ident(output.stderr);
     }
+    // I am still not sure what is more idiomatic - the 'if' above or the 'match' below
+    //
     // match output.status.success() {
     //     true => print_ident(output.stdout),
     //     false => print_ident(output.stderr),

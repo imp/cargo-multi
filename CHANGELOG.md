@@ -1,3 +1,7 @@
+# 0.4.1
+
+No changes - just a respin in order to update crates.io manifest
+
 # 0.4.0
 
 Add usage and help text (Thanks ayoshi)
