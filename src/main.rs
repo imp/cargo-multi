@@ -56,7 +56,6 @@ const MAX_DEPTH: usize = 1;
 fn main() {
 
     let mut cmd = Command::new(CARGO);
-    let mut banner = String::from("Executing ") + CARGO;
 
     let matches = App::new(CARGO)
                       .bin_name(CARGO)
@@ -71,13 +70,14 @@ fn main() {
                                       .arg_from_usage("<cmd>... 'cargo command to run'"))
                       .get_matches();
 
-    if let Some(arg_cmd) = matches.subcommand_matches("multi")
-                                  .and_then(|m| m.values_of("cmd")) {
-        for arg in arg_cmd {
-            cmd.arg(arg);
-            banner = banner + " " + arg;
-        }
-    }
+    let banner: String = matches.subcommand_matches("multi")
+                                .and_then(|m| m.values_of("cmd"))
+                                .map_or("Executing ".to_owned() + CARGO, |v| {
+                                    v.fold("Executing ".to_owned() + CARGO, |acc, m| {
+                                        cmd.arg(m);
+                                        acc + " " + m
+                                    })
+                                });
 
     announce(&banner);
 
