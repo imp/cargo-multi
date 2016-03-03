@@ -14,7 +14,7 @@ walkdir = "0.1.5"
 
 [dependencies.clippy]
 optional = true
-version = "0.0.44"
+version = "0.0.45"
 
 [features]
 default = []
