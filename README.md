@@ -3,6 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/imp/cargo-multi/badge.svg?branch=master)](https://coveralls.io/github/imp/cargo-multi?branch=master)
 master: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/master.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 develop: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/develop.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
+[![Clippy Linting Result](http://clippy.bashy.io/github/imp/cargo-multi/master/badge.svg?style=plastic)](http://clippy.bashy.io/github/imp/cargo-multi/master/log)
 
 Extends cargo to execute the given command on multiple crates. Inspired by `git multi`.
 
