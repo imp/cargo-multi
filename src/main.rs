@@ -22,16 +22,16 @@ fn announce(banner: &str) {
     println!("{}", line);
 }
 
-fn print_ident(buf: Vec<u8>) {
-    for line in String::from_utf8_lossy(&buf[..]).lines() {
-        println!("        {}", line);
-    }
-}
-
 fn display_path(path: &PathBuf) {
     path.file_name()
         .and_then(|p| p.to_str())
         .map(|p| println!("{}:", p));
+}
+
+fn print_ident(buf: Vec<u8>) {
+    for line in String::from_utf8_lossy(&buf[..]).lines() {
+        println!("        {}", line);
+    }
 }
 
 fn report_output(output: Output) {
