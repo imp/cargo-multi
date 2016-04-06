@@ -1,3 +1,7 @@
+# 0.4.2
+
+No functionality changes - just a collection of cleanups
+
 # 0.4.1
 
 No changes - just a respin in order to update crates.io manifest
