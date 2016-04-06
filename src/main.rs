@@ -55,9 +55,6 @@ const MAX_DEPTH: usize = 1;
 
 fn main() {
 
-    let mut cmd = Command::new(CARGO);
-    let mut banner = String::from("Executing ") + CARGO;
-
     let matches = App::new(CARGO)
                       .bin_name(CARGO)
                       .version(crate_version!())
@@ -71,29 +68,32 @@ fn main() {
                                       .arg_from_usage("<cmd>... 'cargo command to run'"))
                       .get_matches();
 
+    let mut cargo_cmd = Command::new(CARGO);
+    let mut banner = String::from("Executing ") + CARGO;
+
     if let Some(arg_cmd) = matches.subcommand_matches("multi")
                                   .and_then(|m| m.values_of("cmd")) {
         for arg in arg_cmd {
-            cmd.arg(arg);
+            cargo_cmd.arg(arg);
             banner = banner + " " + arg;
         }
     }
 
-    announce(&banner);
-
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let to_path_buf = |e: DirEntry| e.path().to_path_buf();
-    let execute = move |p| cmd.current_dir(p).output().map(report_output);
+    let execute = move |p| cargo_cmd.current_dir(p).output().map(report_output);
 
-    let cwd = env::current_dir().unwrap();
-    walkdir::WalkDir::new(cwd)
-        .min_depth(MIN_DEPTH)
-        .max_depth(MAX_DEPTH)
-        .into_iter()
-        .filter_entry(is_crate)
-        .filter_map(|e| e.ok())
-        .map(to_path_buf)
-        .inspect(display_path)
-        .map(execute)
-        .last(); // XXX Non-idiomatic perhaps, but gets the job done. May need to revisit later.
+    if let Ok(cwd) = env::current_dir() {
+        announce(&banner);
+        walkdir::WalkDir::new(cwd)
+            .min_depth(MIN_DEPTH)
+            .max_depth(MAX_DEPTH)
+            .into_iter()
+            .filter_entry(is_crate)
+            .filter_map(|e| e.ok())
+            .map(to_path_buf)
+            .inspect(display_path)
+            .map(execute)
+            .last(); // XXX Non-idiomatic perhaps, but gets the job done. May need to revisit later.
+    }
 }
