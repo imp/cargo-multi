@@ -76,8 +76,7 @@ fn main() {
 
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let display_path = |e: &DirEntry| println!("{}:", e.file_name().to_string_lossy());
-    let to_path_buf = |e: DirEntry| e.path().to_path_buf();
-    let execute = move |p| cargo_cmd.current_dir(p).output().ok();
+    let execute = |e: DirEntry| cargo_cmd.current_dir(e.path()).output().ok();
 
     if let Ok(cwd) = env::current_dir() {
         announce(&banner);
@@ -88,7 +87,6 @@ fn main() {
             .filter_entry(is_crate)
             .filter_map(|e| e.ok())
             .inspect(display_path)
-            .map(to_path_buf)
             .filter_map(execute)
             .foreach(report_output);
     }
