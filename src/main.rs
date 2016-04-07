@@ -24,12 +24,6 @@ fn announce(banner: &str) {
     println!("{}", line);
 }
 
-fn display_path(path: &PathBuf) {
-    path.file_name()
-        .and_then(|p| p.to_str())
-        .map(|p| println!("{}:", p));
-}
-
 fn print_ident(buf: Vec<u8>) {
     for line in String::from_utf8_lossy(&buf[..]).lines() {
         println!("        {}", line);
@@ -84,6 +78,7 @@ fn main() {
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let to_path_buf = |e: DirEntry| e.path().to_path_buf();
     let execute = move |p| cargo_cmd.current_dir(p).output().ok();
+    let display_path = |path: &PathBuf| println!("{}:", path.display());
 
     if let Ok(cwd) = env::current_dir() {
         announce(&banner);
