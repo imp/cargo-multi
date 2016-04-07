@@ -11,6 +11,7 @@ version = "0.4.2"
 
 [dependencies]
 clap = "2.1.2"
+itertools = "0.4.12"
 walkdir = "0.1.5"
 
 [dependencies.clippy]

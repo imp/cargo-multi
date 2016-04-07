@@ -3,12 +3,14 @@
 
 #[macro_use]
 extern crate clap;
+extern crate itertools;
 extern crate walkdir;
 
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
 use clap::{App, SubCommand, AppSettings};
+use itertools::Itertools;
 use walkdir::{DirEntry, WalkDirIterator};
 
 
@@ -81,7 +83,7 @@ fn main() {
 
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let to_path_buf = |e: DirEntry| e.path().to_path_buf();
-    let execute = move |p| cargo_cmd.current_dir(p).output().map(report_output);
+    let execute = move |p| cargo_cmd.current_dir(p).output().ok();
 
     if let Ok(cwd) = env::current_dir() {
         announce(&banner);
@@ -93,7 +95,7 @@ fn main() {
             .filter_map(|e| e.ok())
             .map(to_path_buf)
             .inspect(display_path)
-            .map(execute)
-            .last(); // XXX Non-idiomatic perhaps, but gets the job done. May need to revisit later.
+            .filter_map(execute)
+            .foreach(report_output);
     }
 }
