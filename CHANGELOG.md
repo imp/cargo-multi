@@ -1,3 +1,8 @@
+# 0.4.3
+
+No functionality changes
+Internally use itertools.foreach() for consuming iterator instead of .last()
+
 # 0.4.2
 
 No functionality changes - just a collection of cleanups
