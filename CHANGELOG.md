@@ -3,6 +3,7 @@
 No functionality changes
 Internally use itertools.foreach() for consuming iterator instead of .last()
 Simplify code a bit
+Update dependencies
 
 ## 0.4.2
 
