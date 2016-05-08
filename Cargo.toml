@@ -10,7 +10,7 @@ repository = "https://github.com/imp/cargo-multi.git"
 version = "0.4.3"
 
 [dependencies]
-clap = "2.3.0"
+clap = "2.4.0"
 itertools = "0.4.13"
 walkdir = "0.1.5"
 
