@@ -18,9 +18,7 @@ fn announce(banner: &str) {
     for _ in 0..banner.len() {
         line.push('-');
     }
-    println!("{}", line);
-    println!("{}", banner);
-    println!("{}", line);
+    println!("{}\n{}\n{}", line, banner, line);
 }
 
 fn print_ident(buf: Vec<u8>) {
