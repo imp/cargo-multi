@@ -3,7 +3,7 @@ name = "cargo-multi"
 version = "0.4.4"
 dependencies = [
  "clap 2.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "clippy 0.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clippy 0.0.71 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.4.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "walkdir 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -33,12 +33,13 @@ dependencies = [
 
 [[package]]
 name = "clippy"
-version = "0.0.70"
+version = "0.0.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "clippy_lints 0.0.70 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clippy_lints 0.0.71 (registry+https://github.com/rust-lang/crates.io-index)",
  "quine-mc_cluskey 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex-syntax 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-normalization 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -46,11 +47,12 @@ dependencies = [
 
 [[package]]
 name = "clippy_lints"
-version = "0.0.70"
+version = "0.0.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "quine-mc_cluskey 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex-syntax 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-normalization 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
