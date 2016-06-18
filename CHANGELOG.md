@@ -1,3 +1,8 @@
+## 0.4.5
+
+No functionality changes
+Update dependencies
+
 ## 0.4.4
 
 No functionality changes
