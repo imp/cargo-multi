@@ -49,23 +49,23 @@ const MAX_DEPTH: usize = 1;
 fn main() {
 
     let matches = App::new(CARGO)
-                      .bin_name(CARGO)
-                      .version(crate_version!())
-                      .about("Run cargo command on multiple crates")
-                      .setting(AppSettings::SubcommandRequired)
-                      .setting(AppSettings::ArgRequiredElseHelp)
-                      .subcommand(SubCommand::with_name("multi")
-                                      .version(crate_version!())
-                                      .setting(AppSettings::ArgRequiredElseHelp)
-                                      .setting(AppSettings::TrailingVarArg)
-                                      .arg_from_usage("<cmd>... 'cargo command to run'"))
-                      .get_matches();
+        .bin_name(CARGO)
+        .version(crate_version!())
+        .about("Run cargo command on multiple crates")
+        .setting(AppSettings::SubcommandRequired)
+        .setting(AppSettings::ArgRequiredElseHelp)
+        .subcommand(SubCommand::with_name("multi")
+            .version(crate_version!())
+            .setting(AppSettings::ArgRequiredElseHelp)
+            .setting(AppSettings::TrailingVarArg)
+            .arg_from_usage("<cmd>... 'cargo command to run'"))
+        .get_matches();
 
     let mut cargo_cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
     if let Some(arg_cmd) = matches.subcommand_matches("multi")
-                                  .and_then(|m| m.values_of("cmd")) {
+        .and_then(|m| m.values_of("cmd")) {
         for arg in arg_cmd {
             cargo_cmd.arg(arg);
             banner = banner + " " + arg;
