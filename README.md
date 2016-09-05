@@ -1,6 +1,8 @@
 # cargo-multi
 [![Crates.io](https://img.shields.io/crates/v/cargo-multi.svg?style=plastic)](http://crates.io/crates/cargo-multi)
 [![Coverage Status](https://coveralls.io/repos/github/imp/cargo-multi/badge.svg?branch=master)](https://coveralls.io/github/imp/cargo-multi?branch=master)
+
+GitLab CI:
 master: [![Build Status](http://gitlab.com/imp/cargo-multi/badges/master/build.svg)](http://gitlab.com/imp/cargo-multi/pipelines)
 develop: [![Build Status](http://gitlab.com/imp/cargo-multi/badges/develop/build.svg)](http://gitlab.com/imp/cargo-multi/pipelines)
 
