@@ -4,6 +4,7 @@
 master: [![Build Status](http://gitlab.com/imp/cargo-multi/badges/master/build.svg)](http://gitlab.com/imp/cargo-multi/pipelines)
 develop: [![Build Status](http://gitlab.com/imp/cargo-multi/badges/develop/build.svg)](http://gitlab.com/imp/cargo-multi/pipelines)
 
+Travis:
 master: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/master.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 develop: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/develop.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 
