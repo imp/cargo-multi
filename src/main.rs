@@ -5,11 +5,13 @@
 extern crate clap;
 extern crate itertools;
 extern crate walkdir;
+extern crate toml;
 
 use std::env;
-use std::process::{Command, Output};
+use std::fs::File;
+use std::io::Read;
+use std::process::{exit, Command, Output};
 use clap::{App, SubCommand, AppSettings};
-use itertools::Itertools;
 use walkdir::{DirEntry, WalkDirIterator};
 
 
@@ -27,12 +29,13 @@ fn print_ident(buf: Vec<u8>) {
     }
 }
 
-fn report_output(output: Output) {
+fn report_output(output: Output) -> std::process::ExitStatus {
     if output.status.success() {
         print_ident(output.stdout);
     } else {
         print_ident(output.stderr);
-    }
+    };
+
     // I am still not sure what is more idiomatic - the 'if' above or the 'match' below
     //
     // match output.status.success() {
@@ -40,6 +43,8 @@ fn report_output(output: Output) {
     //     false => print_ident(output.stderr),
     // }
     println!("");
+
+    output.status
 }
 
 const CARGO: &'static str = "cargo";
@@ -72,20 +77,64 @@ fn main() {
         }
     }
 
-    let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
-    let display_path = |e: &DirEntry| println!("{}:", e.file_name().to_string_lossy());
-    let execute = |e: DirEntry| cargo_cmd.current_dir(e.path()).output().ok();
+    announce(&banner);
+    let built_workspace = match File::open("Cargo.toml") {
+        Ok(mut file) => {
+            let mut toml = String::new();
+            match file.read_to_string(&mut toml) {
+                Ok(_) => {
+                    let value: toml::Value = toml.parse().expect("Failed to parse Cargo.toml");
+                    match value.lookup("workspace.members") {
+                        Some(member_values) => {
+                            let failed_commands = member_values
+                                     .as_slice()
+                                     .unwrap()
+                                     .iter()
+                                     .map(|ref x| x.as_str().unwrap())
+                                     .inspect(|x| println!("{}:", x))
+                                     .filter_map(|x| cargo_cmd.current_dir(x).output().ok())
+                                     .map(report_output)
+                                     .filter(|x| !x.success())
+                                     .collect::<Vec<_>>();
 
-    if let Ok(cwd) = env::current_dir() {
-        announce(&banner);
-        walkdir::WalkDir::new(cwd)
-            .min_depth(MIN_DEPTH)
-            .max_depth(MAX_DEPTH)
-            .into_iter()
-            .filter_entry(is_crate)
-            .filter_map(|e| e.ok())
-            .inspect(display_path)
-            .filter_map(execute)
-            .foreach(report_output);
+                            // If there are any failed commands, return the error code of the
+                            // first of them.
+                            if failed_commands.len() > 0 {
+                                exit(failed_commands[0].code().unwrap());
+                            }
+                            true
+                        }
+                        None => false,
+                    }
+                }
+                Err(_) => false,
+            }
+        }
+        Err(_) => false,
+    };
+
+    if !built_workspace {
+        let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
+        let display_path = |e: &DirEntry| println!("{}:", e.file_name().to_string_lossy());
+        let execute = |e: DirEntry| cargo_cmd.current_dir(e.path()).output().ok();
+        if let Ok(cwd) = env::current_dir() {
+            let failed_commands = walkdir::WalkDir::new(cwd)
+                .min_depth(MIN_DEPTH)
+                .max_depth(MAX_DEPTH)
+                .into_iter()
+                .filter_entry(is_crate)
+                .filter_map(|e| e.ok())
+                .inspect(display_path)
+                .filter_map(execute)
+                .map(report_output)
+                .filter(|x| !x.success())
+                .collect::<Vec<_>>();
+
+            // If there are any failed commands, return the error code of the
+            // first of them.
+            if failed_commands.len() > 0 {
+                exit(failed_commands[0].code().unwrap());
+            }
+        }
     }
 }
