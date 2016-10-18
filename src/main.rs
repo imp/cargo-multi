@@ -78,63 +78,64 @@ fn main() {
     }
 
     announce(&banner);
-    let built_workspace = match File::open("Cargo.toml") {
+    let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
+    let display_path = |p: &String| println!("{}:", p);
+    let execute = |p: String| cargo_cmd.current_dir(p).output().ok();
+
+    let mut workspace_members = match File::open("Cargo.toml") {
         Ok(mut file) => {
             let mut toml = String::new();
             match file.read_to_string(&mut toml) {
                 Ok(_) => {
                     let value: toml::Value = toml.parse().expect("Failed to parse Cargo.toml");
-                    match value.lookup("workspace.members") {
-                        Some(member_values) => {
-                            let failed_commands = member_values
-                                     .as_slice()
-                                     .unwrap()
-                                     .iter()
-                                     .map(|ref x| x.as_str().unwrap())
-                                     .inspect(|x| println!("{}:", x))
-                                     .filter_map(|x| cargo_cmd.current_dir(x).output().ok())
-                                     .map(report_output)
-                                     .filter(|x| !x.success())
-                                     .collect::<Vec<_>>();
 
-                            // If there are any failed commands, return the error code of the
-                            // first of them.
-                            if failed_commands.len() > 0 {
-                                exit(failed_commands[0].code().unwrap());
-                            }
-                            true
+                    match value.lookup("workspace.members") {
+                        Some(members) => {
+                            Some(members.as_slice()
+                                        .expect("Failed to read workspace members")
+                                        .into_iter()
+                                        .map(|m| m.as_str().unwrap().to_string())
+                                        .collect::<Vec<_>>())
                         }
-                        None => false,
+                        None => None,
                     }
                 }
-                Err(_) => false,
+                Err(_) => None,
             }
         }
-        Err(_) => false,
+        Err(_) => None,
+    };
+/*
+    if workspace_members.is_none() {
+        workspace_members = match env::current_dir() {
+            Ok(cwd) => {
+                Some(walkdir::WalkDir::new(cwd)
+                        .min_depth(MIN_DEPTH)
+                        .max_depth(MAX_DEPTH)
+                        .into_iter()
+                        .filter_entry(is_crate)
+                        .filter_map(|e| e.ok())
+                        .map(|m| m.file_name().to_string_lossy()))
+            }
+            Err(_) => None,
+        }
+    }
+*/
+    let failed_commands = match workspace_members {
+        Some(members) => {
+            members.into_iter()
+                   .inspect(display_path)
+                   .filter_map(execute)
+                   .map(report_output)
+                   .filter(|x| !x.success())
+                   .collect::<Vec<_>>()
+        }
+        None => Vec::new(),
     };
 
-    if !built_workspace {
-        let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
-        let display_path = |e: &DirEntry| println!("{}:", e.file_name().to_string_lossy());
-        let execute = |e: DirEntry| cargo_cmd.current_dir(e.path()).output().ok();
-        if let Ok(cwd) = env::current_dir() {
-            let failed_commands = walkdir::WalkDir::new(cwd)
-                .min_depth(MIN_DEPTH)
-                .max_depth(MAX_DEPTH)
-                .into_iter()
-                .filter_entry(is_crate)
-                .filter_map(|e| e.ok())
-                .inspect(display_path)
-                .filter_map(execute)
-                .map(report_output)
-                .filter(|x| !x.success())
-                .collect::<Vec<_>>();
-
-            // If there are any failed commands, return the error code of the
-            // first of them.
-            if failed_commands.len() > 0 {
-                exit(failed_commands[0].code().unwrap());
-            }
-        }
+    // If there are any failed commands, return the error code of the
+    // first of them.
+    if failed_commands.len() > 0 {
+        exit(failed_commands[0].code().unwrap());
     }
 }
