@@ -61,10 +61,10 @@ fn main() {
                       .setting(AppSettings::SubcommandRequired)
                       .setting(AppSettings::ArgRequiredElseHelp)
                       .subcommand(SubCommand::with_name("multi")
-                                     .version(crate_version!())
-                                     .setting(AppSettings::ArgRequiredElseHelp)
-                                     .setting(AppSettings::TrailingVarArg)
-                                     .arg_from_usage("<cmd>... 'cargo command to run'"))
+                                      .version(crate_version!())
+                                      .setting(AppSettings::ArgRequiredElseHelp)
+                                      .setting(AppSettings::TrailingVarArg)
+                                      .arg_from_usage("<cmd>... 'cargo command to run'"))
                       .get_matches();
 
     let mut cargo_cmd = Command::new(CARGO);
