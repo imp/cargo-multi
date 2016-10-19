@@ -10,6 +10,7 @@ extern crate toml;
 use std::env;
 use std::fs::File;
 use std::io::Read;
+use std::path::PathBuf;
 use std::process::{exit, Command, Output};
 use clap::{App, SubCommand, AppSettings};
 use walkdir::{DirEntry, WalkDirIterator};
@@ -54,23 +55,23 @@ const MAX_DEPTH: usize = 1;
 fn main() {
 
     let matches = App::new(CARGO)
-        .bin_name(CARGO)
-        .version(crate_version!())
-        .about("Run cargo command on multiple crates")
-        .setting(AppSettings::SubcommandRequired)
-        .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(SubCommand::with_name("multi")
-            .version(crate_version!())
-            .setting(AppSettings::ArgRequiredElseHelp)
-            .setting(AppSettings::TrailingVarArg)
-            .arg_from_usage("<cmd>... 'cargo command to run'"))
-        .get_matches();
+                      .bin_name(CARGO)
+                      .version(crate_version!())
+                      .about("Run cargo command on multiple crates")
+                      .setting(AppSettings::SubcommandRequired)
+                      .setting(AppSettings::ArgRequiredElseHelp)
+                      .subcommand(SubCommand::with_name("multi")
+                                     .version(crate_version!())
+                                     .setting(AppSettings::ArgRequiredElseHelp)
+                                     .setting(AppSettings::TrailingVarArg)
+                                     .arg_from_usage("<cmd>... 'cargo command to run'"))
+                      .get_matches();
 
     let mut cargo_cmd = Command::new(CARGO);
     let mut banner = String::from("Executing ") + CARGO;
 
     if let Some(arg_cmd) = matches.subcommand_matches("multi")
-        .and_then(|m| m.values_of("cmd")) {
+                                  .and_then(|m| m.values_of("cmd")) {
         for arg in arg_cmd {
             cargo_cmd.arg(arg);
             banner = banner + " " + arg;
@@ -79,8 +80,8 @@ fn main() {
 
     announce(&banner);
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
-    let display_path = |p: &String| println!("{}:", p);
-    let execute = |p: String| cargo_cmd.current_dir(p).output().ok();
+    let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
+    let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
 
     // First check if there is a Cargo.toml file with a workspace section in.
     let mut workspace_members = match File::open("Cargo.toml") {
@@ -93,10 +94,10 @@ fn main() {
                     match value.lookup("workspace.members") {
                         Some(members) => {
                             Some(members.as_slice()
-                                .expect("Failed to read workspace members")
-                                .into_iter()
-                                .map(|m| m.as_str().unwrap().to_string())
-                                .collect::<Vec<_>>())
+                                        .expect("Failed to read workspace members")
+                                        .into_iter()
+                                        .map(|m| PathBuf::from(m.as_str().unwrap()))
+                                        .collect::<Vec<_>>())
                         }
                         None => None,
                     }
@@ -113,13 +114,13 @@ fn main() {
         workspace_members = match env::current_dir() {
             Ok(cwd) => {
                 Some(walkdir::WalkDir::new(cwd)
-                    .min_depth(MIN_DEPTH)
-                    .max_depth(MAX_DEPTH)
-                    .into_iter()
-                    .filter_entry(is_crate)
-                    .filter_map(|e| e.ok())
-                    .map(|m| m.file_name().to_string_lossy().to_string())
-                    .collect::<Vec<_>>())
+                                .min_depth(MIN_DEPTH)
+                                .max_depth(MAX_DEPTH)
+                                .into_iter()
+                                .filter_entry(is_crate)
+                                .filter_map(|e| e.ok())
+                                .map(|m| m.path().to_path_buf())
+                                .collect::<Vec<_>>())
             }
             Err(_) => None,
         }
@@ -128,11 +129,11 @@ fn main() {
     let failed_commands = match workspace_members {
         Some(members) => {
             members.into_iter()
-                .inspect(display_path)
-                .filter_map(execute)
-                .map(report_output)
-                .filter(|x| !x.success())
-                .collect::<Vec<_>>()
+                   .inspect(display_path)
+                   .filter_map(execute)
+                   .map(report_output)
+                   .filter(|x| !x.success())
+                   .collect::<Vec<_>>()
         }
         None => Vec::new(),
     };
