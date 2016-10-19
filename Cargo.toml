@@ -1,6 +1,5 @@
 [package]
-authors = ["Cyril Plisko <cyril.plisko@mountall.com>",
-           "Alexander Goldberg <algold@gmail.com>"]
+authors = ["Cyril Plisko <cyril.plisko@mountall.com>", "Alexander Goldberg <algold@gmail.com>"]
 description = "Extends cargo to run the given command on multiple crates similar to 'git multi'"
 homepage = "https://github.com/imp/cargo-multi"
 keywords = ["cargo", "subcommand", "multi"]
@@ -12,11 +11,12 @@ version = "0.4.5"
 [dependencies]
 clap = "2.6"
 itertools = "0.4"
+toml = "0.2.1"
 walkdir = "0.1"
 
 [dependencies.clippy]
-version = "0.0.*"
 optional = true
+version = "0.0.*"
 
 [features]
 default = []
