@@ -33,9 +33,10 @@ fn print_ident(buf: Vec<u8>) {
 fn report_output(output: Output) -> std::process::ExitStatus {
     if output.status.success() {
         print_ident(output.stdout);
-    } else {
-        print_ident(output.stderr);
-    };
+    }
+
+    // Always print stderr as warnings from cargo are sent to stderr.
+    print_ident(output.stderr);
 
     // I am still not sure what is more idiomatic - the 'if' above or the 'match' below
     //
