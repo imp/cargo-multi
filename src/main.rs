@@ -53,6 +53,25 @@ const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
+fn generate_cargo_cmd(path: &PathBuf, commands: &Vec<String>) -> Command {
+
+    let mut cargo_cmd = Command::new(CARGO);
+
+    // Take a clone of the commands so that the manifest can be passed to the
+    // cargo command, this is to any references to files in the output are relative
+    // to the current directory.
+    let mut commands = commands.clone();
+
+    commands.insert(1, "--manifest-path".to_string());
+    commands.insert(2, format!("{}/Cargo.toml", path.to_string_lossy()));
+
+    for arg in commands {
+        cargo_cmd.arg(arg);
+    }
+
+    cargo_cmd
+}
+
 fn main() {
 
     let matches = App::new(CARGO)
@@ -68,21 +87,18 @@ fn main() {
                                       .arg_from_usage("<cmd>... 'cargo command to run'"))
                       .get_matches();
 
-    let mut cargo_cmd = Command::new(CARGO);
-    let mut banner = String::from("Executing ") + CARGO;
+    let commands = matches.subcommand_matches("multi")
+                          .and_then(|m| m.values_of("cmd"))
+                          .expect("No cargo commands provided")
+                          .map(|arg| arg.to_string())
+                          .collect::<Vec<_>>();
 
-    if let Some(arg_cmd) = matches.subcommand_matches("multi")
-                                  .and_then(|m| m.values_of("cmd")) {
-        for arg in arg_cmd {
-            cargo_cmd.arg(arg);
-            banner = banner + " " + arg;
-        }
-    }
+    let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
     announce(&banner);
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
+    let execute = |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
     // First check if there is a Cargo.toml file with a workspace section in.
     let mut workspace_members = match File::open("Cargo.toml") {
