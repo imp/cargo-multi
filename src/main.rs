@@ -85,6 +85,25 @@ const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
+fn generate_cargo_cmd(path: &PathBuf, commands: &Vec<String>) -> Command {
+
+    let mut cargo_cmd = Command::new(CARGO);
+
+    // Take a clone of the commands so that the manifest can be passed to the
+    // cargo command, this is to any references to files in the output are relative
+    // to the current directory.
+    let mut commands = commands.clone();
+
+    commands.insert(1, "--manifest-path".to_string());
+    commands.insert(2, format!("{}/Cargo.toml", path.to_string_lossy()));
+
+    for arg in commands {
+        cargo_cmd.arg(arg);
+    }
+
+    cargo_cmd
+}
+
 fn main() {
 
     let matches = App::new(CARGO)
@@ -102,18 +121,13 @@ fn main() {
         )
         .get_matches();
 
-    let mut cargo_cmd = Command::new(CARGO);
-    let mut banner = vec!["Executing", CARGO];
+    let commands = matches.subcommand_matches("multi")
+                          .and_then(|m| m.values_of("cmd"))
+                          .expect("No cargo commands provided")
+                          .map(|arg| arg.to_string())
+                          .collect::<Vec<_>>();
 
-    if let Some(arg_cmd) = matches
-        .subcommand_matches("multi")
-        .and_then(|m| m.values_of("cmd"))
-    {
-        for arg in arg_cmd {
-            cargo_cmd.arg(arg);
-            banner.push(arg);
-        }
-    }
+    let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
     let banner = banner.join(" ");
 
@@ -124,7 +138,7 @@ fn main() {
         .unwrap_or_else(find_crates);
 
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
+    let execute = |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
     let failed_commands = dirs.into_iter()
         .inspect(display_path)
