@@ -92,10 +92,10 @@ fn main() {
                     match value.lookup("workspace.members") {
                         Some(members) => {
                             Some(members.as_slice()
-                                        .expect("Failed to read workspace members")
-                                        .into_iter()
-                                        .map(|m| PathBuf::from(m.as_str().unwrap()))
-                                        .collect::<Vec<_>>())
+                                .expect("Failed to read workspace members")
+                                .into_iter()
+                                .map(|m| PathBuf::from(m.as_str().unwrap()))
+                                .collect::<Vec<_>>())
                         }
                         None => None,
                     }
@@ -112,13 +112,13 @@ fn main() {
         workspace_members = match env::current_dir() {
             Ok(cwd) => {
                 Some(walkdir::WalkDir::new(cwd)
-                                .min_depth(MIN_DEPTH)
-                                .max_depth(MAX_DEPTH)
-                                .into_iter()
-                                .filter_entry(is_crate)
-                                .filter_map(|e| e.ok())
-                                .map(|m| m.path().to_path_buf())
-                                .collect::<Vec<_>>())
+                    .min_depth(MIN_DEPTH)
+                    .max_depth(MAX_DEPTH)
+                    .into_iter()
+                    .filter_entry(is_crate)
+                    .filter_map(|e| e.ok())
+                    .map(|m| m.path().to_path_buf())
+                    .collect::<Vec<_>>())
             }
             Err(_) => None,
         }
@@ -127,11 +127,11 @@ fn main() {
     let failed_commands = match workspace_members {
         Some(members) => {
             members.into_iter()
-                   .inspect(display_path)
-                   .filter_map(execute)
-                   .map(report_output)
-                   .filter(|x| !x.success())
-                   .collect::<Vec<_>>()
+                .inspect(display_path)
+                .filter_map(execute)
+                .map(report_output)
+                .filter(|x| !x.success())
+                .collect::<Vec<_>>()
         }
         None => Vec::new(),
     };
