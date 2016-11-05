@@ -9,10 +9,10 @@ repository = "https://gitlab.com/imp/cargo-multi.git"
 version = "0.4.5"
 
 [dependencies]
-clap = "2.9"
-itertools = "0.4"
-toml = "0.2.1"
-walkdir = "0.1"
+clap = "2"
+itertools = "0.5"
+toml = "0.2"
+walkdir = "1"
 
 [features]
 default = []
