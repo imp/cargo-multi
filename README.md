@@ -11,7 +11,7 @@ master: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/master.sv
 develop: [![Build Status](https://img.shields.io/travis/imp/cargo-multi/develop.svg?style=plastic)](https://travis-ci.org/imp/cargo-multi)
 
 Extends cargo to execute the given command on multiple crates. Inspired by `git multi`.
-First cargo-multi checks current directory for cargo workspaces and if found executes a given command in each workspace. Alternatively cargo-multi executes a given command in each crate found in the current directory.
+First `cargo-multi` checks current directory for cargo workspaces and if found executes a given command in each workspace. Alternatively `cargo-multi` executes a given command in each crate found in the current directory.
 
 ## Installation
 Use `cargo` to install this subcommand
