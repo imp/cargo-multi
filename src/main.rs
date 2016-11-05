@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate clap;
-extern crate itertools;
 extern crate walkdir;
 extern crate toml;
 

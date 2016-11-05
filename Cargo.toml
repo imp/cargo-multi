@@ -10,9 +10,5 @@ version = "0.4.5"
 
 [dependencies]
 clap = "2"
-itertools = "0.5"
 toml = "0.2"
 walkdir = "1"
-
-[features]
-default = []
