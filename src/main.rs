@@ -138,7 +138,7 @@ fn main() {
 
     // If there are any failed commands, return the error code of the
     // first of them.
-    if failed_commands.len() > 0 {
+    if !failed_commands.is_empty() {
         exit(failed_commands[0].code().unwrap());
     }
 }
