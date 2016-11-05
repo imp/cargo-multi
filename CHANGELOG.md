@@ -1,3 +1,7 @@
+## 0.5.0
+
+Support cargo workspaces. If run inside multi-workspace project executes command in each workspace.
+
 ## 0.4.5
 
 No functionality changes
