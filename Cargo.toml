@@ -1,6 +1,5 @@
 [package]
-authors = ["Cyril Plisko <cyril.plisko@mountall.com>",
-           "Alexander Goldberg <algold@gmail.com>"]
+authors = ["Cyril Plisko <cyril.plisko@mountall.com>", "Alexander Goldberg <algold@gmail.com>"]
 description = "Extends cargo to run the given command on multiple crates similar to 'git multi'"
 homepage = "https://gitlab.com/imp/cargo-multi"
 keywords = ["cargo", "subcommand", "multi"]
@@ -12,6 +11,7 @@ version = "0.4.5"
 [dependencies]
 clap = "2.9"
 itertools = "0.4"
+toml = "0.2.1"
 walkdir = "0.1"
 
 [features]
