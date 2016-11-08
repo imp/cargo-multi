@@ -53,19 +53,20 @@ const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
-fn generate_cargo_cmd(path: &PathBuf, commands: &Vec<String>) -> Command {
+fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
 
     let mut cargo_cmd = Command::new(CARGO);
 
-    // Take a clone of the commands so that the manifest can be passed to the
-    // cargo command, this is to any references to files in the output are relative
+    let (command, args) = commands.split_at(1);
+
+    cargo_cmd.arg(command[0].clone());
+
+    // Insert the manifest-path option so that any logs about files are relative
     // to the current directory.
-    let mut commands = commands.clone();
+    cargo_cmd.arg("--manifest-path".to_string());
+    cargo_cmd.arg(format!("{}/Cargo.toml", path.to_string_lossy()));
 
-    commands.insert(1, "--manifest-path".to_string());
-    commands.insert(2, format!("{}/Cargo.toml", path.to_string_lossy()));
-
-    for arg in commands {
+    for arg in args {
         cargo_cmd.arg(arg);
     }
 
@@ -98,7 +99,7 @@ fn main() {
     announce(&banner);
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
+    let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
     // First check if there is a Cargo.toml file with a workspace section in.
     let mut workspace_members = match File::open("Cargo.toml") {
@@ -157,7 +158,7 @@ fn main() {
 
     // If there are any failed commands, return the error code of the
     // first of them.
-    if failed_commands.len() > 0 {
+    if !failed_commands.is_empty() {
         exit(failed_commands[0].code().unwrap());
     }
 }
