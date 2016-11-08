@@ -53,6 +53,26 @@ const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
+fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
+
+    let mut cargo_cmd = Command::new(CARGO);
+
+    let (command, args) = commands.split_at(1);
+
+    cargo_cmd.arg(command[0].clone());
+
+    // Insert the manifest-path option so that any logs about files are relative
+    // to the current directory.
+    cargo_cmd.arg("--manifest-path".to_string());
+    cargo_cmd.arg(format!("{}/Cargo.toml", path.to_string_lossy()));
+
+    for arg in args {
+        cargo_cmd.arg(arg);
+    }
+
+    cargo_cmd
+}
+
 fn main() {
 
     let matches = App::new(CARGO)
@@ -68,21 +88,18 @@ fn main() {
                                       .arg_from_usage("<cmd>... 'cargo command to run'"))
                       .get_matches();
 
-    let mut cargo_cmd = Command::new(CARGO);
-    let mut banner = String::from("Executing ") + CARGO;
+    let commands = matches.subcommand_matches("multi")
+                          .and_then(|m| m.values_of("cmd"))
+                          .expect("No cargo commands provided")
+                          .map(|arg| arg.to_string())
+                          .collect::<Vec<_>>();
 
-    if let Some(arg_cmd) = matches.subcommand_matches("multi")
-                                  .and_then(|m| m.values_of("cmd")) {
-        for arg in arg_cmd {
-            cargo_cmd.arg(arg);
-            banner = banner + " " + arg;
-        }
-    }
+    let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
     announce(&banner);
     let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
+    let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
     // First check if there is a Cargo.toml file with a workspace section in.
     let mut workspace_members = match File::open("Cargo.toml") {
@@ -141,7 +158,7 @@ fn main() {
 
     // If there are any failed commands, return the error code of the
     // first of them.
-    if failed_commands.len() > 0 {
+    if !failed_commands.is_empty() {
         exit(failed_commands[0].code().unwrap());
     }
 }
