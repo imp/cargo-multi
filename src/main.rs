@@ -1,16 +1,12 @@
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-
 #[macro_use]
 extern crate clap;
-extern crate itertools;
 extern crate walkdir;
 extern crate toml;
 
 use std::env;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{exit, Command, Output};
 use clap::{App, SubCommand, AppSettings};
 use walkdir::{DirEntry, WalkDirIterator};
@@ -37,16 +33,49 @@ fn report_output(output: Output) -> std::process::ExitStatus {
 
     // Always print stderr as warnings from cargo are sent to stderr.
     print_ident(output.stderr);
-
-    // I am still not sure what is more idiomatic - the 'if' above or the 'match' below
-    //
-    // match output.status.success() {
-    //     true => print_ident(output.stdout),
-    //     false => print_ident(output.stderr),
-    // }
     println!("");
-
     output.status
+}
+
+fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
+    File::open(path)
+        .and_then(|mut f| {
+            let mut t = String::new();
+            f.read_to_string(&mut t).map(|_| t)
+        })
+        .ok()
+}
+
+fn find_workspaces() -> Option<Vec<PathBuf>> {
+    if let Some(ref toml) = read_file("Cargo.toml").and_then(|t| t.parse::<toml::Value>().ok()) {
+        toml.lookup("workspace.members")
+            .and_then(|w| w.as_slice())
+            .map(|v| {
+                v.into_iter()
+                    .filter_map(|s| s.as_str())
+                    .map(PathBuf::from)
+                    .collect::<Vec<_>>()
+            })
+    } else {
+        None
+    }
+}
+
+fn find_crates() -> Vec<PathBuf> {
+    let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
+
+    if let Ok(cwd) = env::current_dir() {
+        walkdir::WalkDir::new(cwd)
+            .min_depth(MIN_DEPTH)
+            .max_depth(MAX_DEPTH)
+            .into_iter()
+            .filter_entry(is_crate)
+            .filter_map(|e| e.ok())
+            .map(|m| m.path().to_path_buf())
+            .collect::<Vec<_>>()
+    } else {
+        vec![]
+    }
 }
 
 const CARGO: &'static str = "cargo";
@@ -76,17 +105,17 @@ fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
 fn main() {
 
     let matches = App::new(CARGO)
-                      .bin_name(CARGO)
-                      .version(crate_version!())
-                      .about("Run cargo command on multiple crates")
-                      .setting(AppSettings::SubcommandRequired)
-                      .setting(AppSettings::ArgRequiredElseHelp)
-                      .subcommand(SubCommand::with_name("multi")
-                                      .version(crate_version!())
-                                      .setting(AppSettings::ArgRequiredElseHelp)
-                                      .setting(AppSettings::TrailingVarArg)
-                                      .arg_from_usage("<cmd>... 'cargo command to run'"))
-                      .get_matches();
+        .bin_name(CARGO)
+        .version(crate_version!())
+        .about("Run cargo command on multiple crates")
+        .setting(AppSettings::SubcommandRequired)
+        .setting(AppSettings::ArgRequiredElseHelp)
+        .subcommand(SubCommand::with_name("multi")
+            .version(crate_version!())
+            .setting(AppSettings::ArgRequiredElseHelp)
+            .setting(AppSettings::TrailingVarArg)
+            .arg_from_usage("<cmd>... 'cargo command to run'"))
+        .get_matches();
 
     let commands = matches.subcommand_matches("multi")
                           .and_then(|m| m.values_of("cmd"))
@@ -97,64 +126,18 @@ fn main() {
     let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
     announce(&banner);
-    let is_crate = |e: &DirEntry| e.path().join("Cargo.toml").exists();
+
+    let dirs = find_workspaces().unwrap_or_else(find_crates);
+
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
     let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
-    // First check if there is a Cargo.toml file with a workspace section in.
-    let mut workspace_members = match File::open("Cargo.toml") {
-        Ok(mut file) => {
-            let mut toml = String::new();
-            match file.read_to_string(&mut toml) {
-                Ok(_) => {
-                    let value: toml::Value = toml.parse().expect("Failed to parse Cargo.toml");
-
-                    match value.lookup("workspace.members") {
-                        Some(members) => {
-                            Some(members.as_slice()
-                                        .expect("Failed to read workspace members")
-                                        .into_iter()
-                                        .map(|m| PathBuf::from(m.as_str().unwrap()))
-                                        .collect::<Vec<_>>())
-                        }
-                        None => None,
-                    }
-                }
-                Err(_) => None,
-            }
-        }
-        Err(_) => None,
-    };
-
-    // If there was no workspace members present, add each crate directory
-    // present.
-    if workspace_members.is_none() {
-        workspace_members = match env::current_dir() {
-            Ok(cwd) => {
-                Some(walkdir::WalkDir::new(cwd)
-                                .min_depth(MIN_DEPTH)
-                                .max_depth(MAX_DEPTH)
-                                .into_iter()
-                                .filter_entry(is_crate)
-                                .filter_map(|e| e.ok())
-                                .map(|m| m.path().to_path_buf())
-                                .collect::<Vec<_>>())
-            }
-            Err(_) => None,
-        }
-    }
-
-    let failed_commands = match workspace_members {
-        Some(members) => {
-            members.into_iter()
-                   .inspect(display_path)
-                   .filter_map(execute)
-                   .map(report_output)
-                   .filter(|x| !x.success())
-                   .collect::<Vec<_>>()
-        }
-        None => Vec::new(),
-    };
+    let failed_commands = dirs.into_iter()
+        .inspect(display_path)
+        .filter_map(execute)
+        .map(report_output)
+        .filter(|x| !x.success())
+        .collect::<Vec<_>>();
 
     // If there are any failed commands, return the error code of the
     // first of them.
