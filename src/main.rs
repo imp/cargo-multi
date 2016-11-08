@@ -118,10 +118,10 @@ fn main() {
         .get_matches();
 
     let commands = matches.subcommand_matches("multi")
-                          .and_then(|m| m.values_of("cmd"))
-                          .expect("No cargo commands provided")
-                          .map(|arg| arg.to_string())
-                          .collect::<Vec<_>>();
+        .and_then(|m| m.values_of("cmd"))
+        .expect("No cargo commands provided")
+        .map(|arg| arg.to_string())
+        .collect::<Vec<_>>();
 
     let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
