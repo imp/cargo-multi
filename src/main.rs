@@ -82,6 +82,29 @@ const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
+fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
+
+    let mut cargo_cmd = Command::new(CARGO);
+
+    let (command, args) = commands.split_at(1);
+
+    cargo_cmd.arg(command[0].clone());
+
+    // Clippy requires the full path to be provided for the manifest-path, so
+    // pass it across in full.
+    let full_path = std::fs::canonicalize(path).expect("Failed to expand path");
+
+    // Insert the manifest-path option so that any logs about files are relative
+    // to the current directory.
+    cargo_cmd.arg(format!("--manifest-path={}/Cargo.toml", full_path.to_string_lossy()));
+
+    for arg in args {
+        cargo_cmd.arg(arg);
+    }
+
+    cargo_cmd
+}
+
 fn main() {
 
     let matches = App::new(CARGO)
@@ -97,24 +120,20 @@ fn main() {
             .arg_from_usage("<cmd>... 'cargo command to run'"))
         .get_matches();
 
-    let mut cargo_cmd = Command::new(CARGO);
-    let mut banner = vec!["Executing", CARGO];
+    let commands = matches.subcommand_matches("multi")
+        .and_then(|m| m.values_of("cmd"))
+        .expect("No cargo commands provided")
+        .map(|arg| arg.to_string())
+        .collect::<Vec<_>>();
 
-    if let Some(arg_cmd) = matches.subcommand_matches("multi").and_then(|m| m.values_of("cmd")) {
-        for arg in arg_cmd {
-            cargo_cmd.arg(arg);
-            banner.push(arg);
-        }
-    }
-
-    let banner = banner.join(" ");
+    let banner = format!("Executing {} {}", CARGO, commands.join(" "));
 
     announce(&banner);
 
     let dirs = find_workspaces().unwrap_or_else(find_crates);
 
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
+    let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
 
     let failed_commands = dirs.into_iter()
         .inspect(display_path)
