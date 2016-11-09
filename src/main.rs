@@ -90,10 +90,13 @@ fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
 
     cargo_cmd.arg(command[0].clone());
 
+    // Clippy requires the full path to be provided for the manifest-path, so
+    // pass it across in full.
+    let full_path = std::fs::canonicalize(path).expect("Failed to expand path");
+
     // Insert the manifest-path option so that any logs about files are relative
     // to the current directory.
-    cargo_cmd.arg("--manifest-path".to_string());
-    cargo_cmd.arg(format!("{}/Cargo.toml", path.to_string_lossy()));
+    cargo_cmd.arg(format!("--manifest-path={}/Cargo.toml", full_path.to_string_lossy()));
 
     for arg in args {
         cargo_cmd.arg(arg);
