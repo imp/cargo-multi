@@ -48,8 +48,8 @@ fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
 
 fn find_workspaces() -> Option<Vec<PathBuf>> {
     if let Some(ref toml) = read_file("Cargo.toml").and_then(|t| t.parse::<toml::Value>().ok()) {
-        toml.lookup("workspace.members")
-            .and_then(|w| w.as_slice())
+        toml.get("workspace.members")
+            .and_then(|w| w.as_array())
             .map(|v| {
                 v.into_iter()
                     .filter_map(|s| s.as_str())
