@@ -40,9 +40,9 @@ fn report_output(output: Output) -> std::process::ExitStatus {
 fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
     File::open(path)
         .and_then(|mut f| {
-            let mut t = String::new();
-            f.read_to_string(&mut t).map(|_| t)
-        })
+                      let mut t = String::new();
+                      f.read_to_string(&mut t).map(|_| t)
+                  })
         .ok()
 }
 
@@ -51,11 +51,11 @@ fn find_workspaces() -> Option<Vec<PathBuf>> {
         toml.get("workspace.members")
             .and_then(|w| w.as_array())
             .map(|v| {
-                v.into_iter()
-                    .filter_map(|s| s.as_str())
-                    .map(PathBuf::from)
-                    .collect::<Vec<_>>()
-            })
+                     v.into_iter()
+                         .filter_map(|s| s.as_str())
+                         .map(PathBuf::from)
+                         .collect::<Vec<_>>()
+                 })
     } else {
         None
     }
@@ -111,13 +111,14 @@ fn main() {
         .setting(AppSettings::SubcommandRequired)
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(SubCommand::with_name("multi")
-            .version(crate_version!())
-            .setting(AppSettings::ArgRequiredElseHelp)
-            .setting(AppSettings::TrailingVarArg)
-            .arg_from_usage("<cmd>... 'cargo command to run'"))
+                        .version(crate_version!())
+                        .setting(AppSettings::ArgRequiredElseHelp)
+                        .setting(AppSettings::TrailingVarArg)
+                        .arg_from_usage("<cmd>... 'cargo command to run'"))
         .get_matches();
 
-    let commands = matches.subcommand_matches("multi")
+    let commands = matches
+        .subcommand_matches("multi")
         .and_then(|m| m.values_of("cmd"))
         .expect("No cargo commands provided")
         .map(|arg| arg.to_string())
