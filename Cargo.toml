@@ -9,6 +9,6 @@ repository = "https://gitlab.com/imp/cargo-multi.git"
 version = "0.5.0"
 
 [dependencies]
-clap = "2"
+clap = "2.0"
 toml = "0.2"
-walkdir = "1"
+walkdir = "1.0"
