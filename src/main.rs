@@ -20,21 +20,20 @@ fn announce(banner: &str) {
     println!("{}\n{}\n{}", line, banner, line);
 }
 
-fn print_ident(buf: Vec<u8>) {
-    for line in String::from_utf8_lossy(&buf[..]).lines() {
+fn print_ident(buf: &[u8]) {
+    for line in String::from_utf8_lossy(buf).lines() {
         println!("        {}", line);
     }
 }
 
-fn report_output(output: Output) -> std::process::ExitStatus {
+fn report_output(output: &Output) {
     if output.status.success() {
-        print_ident(output.stdout);
+        print_ident(&output.stdout);
     }
 
     // Always print stderr as warnings from cargo are sent to stderr.
-    print_ident(output.stderr);
+    print_ident(&output.stderr);
     println!("");
-    output.status
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
@@ -137,13 +136,13 @@ fn main() {
     let failed_commands = dirs.into_iter()
         .inspect(display_path)
         .filter_map(execute)
-        .map(report_output)
-        .filter(|x| !x.success())
+        .inspect(report_output)
+        .filter(|x| !x.status.success())
         .collect::<Vec<_>>();
 
     // If there are any failed commands, return the error code of the
     // first of them.
     if !failed_commands.is_empty() {
-        exit(failed_commands[0].code().unwrap());
+        exit(failed_commands[0].status.code().unwrap());
     }
 }
