@@ -91,7 +91,7 @@ fn generate_cargo_cmd(cargo: &str, path: &Path, commands: &[String]) -> Command 
     // Insert the manifest-path option so that any logs about files are relative
     // to the current directory.
     cargo_cmd.arg("--manifest-path".to_string());
-    cargo_cmd.arg(format!("{}/Cargo.toml", path.to_string_lossy()));
+    cargo_cmd.arg(path.join("Cargo.toml"));
 
     for arg in args {
         cargo_cmd.arg(arg);
