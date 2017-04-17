@@ -78,13 +78,12 @@ fn find_crates() -> Vec<PathBuf> {
     }
 }
 
-const CARGO: &'static str = "cargo";
 const MIN_DEPTH: usize = 1;
 const MAX_DEPTH: usize = 1;
 
-fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
+fn generate_cargo_cmd(cargo: &str, path: &Path, commands: &[String]) -> Command {
 
-    let mut cargo_cmd = Command::new(CARGO);
+    let mut cargo_cmd = Command::new(cargo);
 
     let (command, args) = commands.split_at(1);
 
@@ -104,8 +103,10 @@ fn generate_cargo_cmd(path: &PathBuf, commands: &[String]) -> Command {
 
 fn main() {
 
-    let matches = App::new(CARGO)
-        .bin_name(CARGO)
+    let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
+
+    let matches = App::new(cargo.as_str())
+        .bin_name(cargo.as_str())
         .version(crate_version!())
         .about("Run cargo command on multiple crates")
         .setting(AppSettings::SubcommandRequired)
@@ -124,14 +125,14 @@ fn main() {
         .map(|arg| arg.to_string())
         .collect::<Vec<_>>();
 
-    let banner = format!("Executing {} {}", CARGO, commands.join(" "));
+    let banner = format!("Executing {} {}", cargo, commands.join(" "));
 
     announce(&banner);
 
     let dirs = find_workspaces().unwrap_or_else(find_crates);
 
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
-    let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands).output().ok();
+    let execute = |path: PathBuf| generate_cargo_cmd(&cargo, &path, &commands).output().ok();
 
     let failed_commands = dirs.into_iter()
         .inspect(display_path)
