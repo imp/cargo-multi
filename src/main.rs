@@ -13,10 +13,7 @@ use walkdir::{DirEntry, WalkDirIterator};
 
 
 fn announce(banner: &str) {
-    let mut line = String::new();
-    for _ in 0..banner.len() {
-        line.push('-');
-    }
+    let line = "-".repeat(banner.len());
     println!("{}\n{}\n{}", line, banner, line);
 }
 
