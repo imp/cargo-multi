@@ -12,7 +12,8 @@ use clap::{App, SubCommand, AppSettings};
 use walkdir::{DirEntry, WalkDirIterator};
 
 
-fn announce(banner: &str) {
+fn announce(cargo: &str, commands: &[String]) {
+    let banner = format!("Executing {} {}", cargo, commands.join(" "));
     let line = "-".repeat(banner.len());
     println!("{}\n{}\n{}", line, banner, line);
 }
@@ -121,9 +122,7 @@ fn main() {
         .map(|arg| arg.to_string())
         .collect::<Vec<_>>();
 
-    let banner = format!("Executing {} {}", cargo, commands.join(" "));
-
-    announce(&banner);
+    announce(&cargo, &commands);
 
     let dirs = find_workspaces().unwrap_or_else(find_crates);
 
