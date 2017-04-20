@@ -127,7 +127,7 @@ fn main() {
 
     let dirs = find_workspaces().unwrap_or_else(find_crates);
 
-    let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
+    let display_path = |p: &PathBuf| println!("{}:", p.display());
     let execute = |path: PathBuf| generate_cargo_cmd(&cargo, &path, &commands).output().ok();
 
     let failed_commands = dirs.into_iter()
