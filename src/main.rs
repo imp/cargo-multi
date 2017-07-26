@@ -2,11 +2,10 @@
 extern crate clap;
 extern crate walkdir;
 extern crate toml;
+extern crate serde_json;
 
 use std::env;
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::{exit, Command, Output};
 use clap::{App, SubCommand, AppSettings};
 use walkdir::{DirEntry, WalkDirIterator};
@@ -37,25 +36,24 @@ fn report_output(output: Output) -> std::process::ExitStatus {
     output.status
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
-    File::open(path)
-        .and_then(|mut f| {
-            let mut t = String::new();
-            f.read_to_string(&mut t).map(|_| t)
-        })
-        .ok()
-}
-
 fn find_workspaces() -> Option<Vec<PathBuf>> {
-    if let Some(ref toml) = read_file("Cargo.toml").and_then(|t| t.parse::<toml::Value>().ok()) {
-        toml.lookup("workspace.members")
-            .and_then(|w| w.as_slice())
-            .map(|v| {
-                v.into_iter()
-                    .filter_map(|s| s.as_str())
-                    .map(PathBuf::from)
-                    .collect::<Vec<_>>()
-            })
+    let output = Command::new(CARGO)
+        .args(&["metadata", "--no-deps", "-q", "--format-version",  "1"])
+        .output()
+        .expect("Failed to run `cargo metadata`");
+
+    if output.status.success() {
+        let metadata: serde_json::Value =
+            serde_json::from_str(&String::from_utf8_lossy(&output.stdout))
+                .expect("Invalid cargo metadata");
+
+        metadata
+            .get("workspace_members")
+            .and_then(|members| members.as_array())
+            .map(|members| members.iter()
+                                  .filter_map(|member| member.as_str())
+                                  .map(|path| path.trim_left_matches("path+file://"))
+                                  .map(PathBuf::from).collect())
     } else {
         None
     }
