@@ -38,22 +38,26 @@ fn report_output(output: Output) -> std::process::ExitStatus {
 
 fn find_workspaces() -> Option<Vec<PathBuf>> {
     let output = Command::new(CARGO)
-        .args(&["metadata", "--no-deps", "-q", "--format-version",  "1"])
+        .args(&["metadata", "--no-deps", "-q", "--format-version", "1"])
         .output()
         .expect("Failed to run `cargo metadata`");
 
     if output.status.success() {
-        let metadata: serde_json::Value =
-            serde_json::from_str(&String::from_utf8_lossy(&output.stdout))
-                .expect("Invalid cargo metadata");
+        let metadata: serde_json::Value = serde_json::from_str(
+            &String::from_utf8_lossy(&output.stdout),
+        ).expect("Invalid cargo metadata");
 
         metadata
             .get("workspace_members")
             .and_then(|members| members.as_array())
-            .map(|members| members.iter()
-                                  .filter_map(|member| member.as_str())
-                                  .map(|path| path.trim_left_matches("path+file://"))
-                                  .map(PathBuf::from).collect())
+            .map(|members| {
+                members
+                    .iter()
+                    .filter_map(|member| member.as_str())
+                    .map(|path| path.trim_left_matches("path+file://"))
+                    .map(PathBuf::from)
+                    .collect()
+            })
     } else {
         None
     }
@@ -88,17 +92,22 @@ fn main() {
         .about("Run cargo command on multiple crates")
         .setting(AppSettings::SubcommandRequired)
         .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(SubCommand::with_name("multi")
-            .version(crate_version!())
-            .setting(AppSettings::ArgRequiredElseHelp)
-            .setting(AppSettings::TrailingVarArg)
-            .arg_from_usage("<cmd>... 'cargo command to run'"))
+        .subcommand(
+            SubCommand::with_name("multi")
+                .version(crate_version!())
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::TrailingVarArg)
+                .arg_from_usage("<cmd>... 'cargo command to run'"),
+        )
         .get_matches();
 
     let mut cargo_cmd = Command::new(CARGO);
     let mut banner = vec!["Executing", CARGO];
 
-    if let Some(arg_cmd) = matches.subcommand_matches("multi").and_then(|m| m.values_of("cmd")) {
+    if let Some(arg_cmd) = matches
+        .subcommand_matches("multi")
+        .and_then(|m| m.values_of("cmd"))
+    {
         for arg in arg_cmd {
             cargo_cmd.arg(arg);
             banner.push(arg);
