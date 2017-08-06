@@ -5,9 +5,10 @@ extern crate toml;
 extern crate serde_json;
 
 use std::env;
+use std::error::Error;
 use std::path::PathBuf;
 use std::process::{exit, Command, Output};
-use clap::{App, SubCommand, AppSettings};
+use clap::{App, AppSettings, SubCommand};
 use walkdir::{DirEntry, WalkDirIterator};
 
 
@@ -36,30 +37,33 @@ fn report_output(output: Output) -> std::process::ExitStatus {
     output.status
 }
 
-fn find_workspaces() -> Option<Vec<PathBuf>> {
+fn find_workspaces() -> Result<Option<Vec<PathBuf>>, Box<Error>> {
     let output = Command::new(CARGO)
         .args(&["metadata", "--no-deps", "-q", "--format-version", "1"])
-        .output()
-        .expect("Failed to run `cargo metadata`");
+        .output()?;
 
     if output.status.success() {
-        let metadata: serde_json::Value = serde_json::from_str(
-            &String::from_utf8_lossy(&output.stdout),
-        ).expect("Invalid cargo metadata");
+        let metadata: serde_json::Value =
+            serde_json::from_str(&String::from_utf8_lossy(&output.stdout))?;
 
-        metadata
-            .get("workspace_members")
-            .and_then(|members| members.as_array())
-            .map(|members| {
-                members
-                    .iter()
-                    .filter_map(|member| member.as_str())
-                    .map(|path| path.trim_left_matches("path+file://"))
+
+        let workspace_members = metadata["packages"]
+            .as_array()
+            .ok_or("No packages in workspace")?;
+
+        workspace_members
+            .iter()
+            .map(|package| {
+                package["manifest_path"]
+                    .as_str()
                     .map(PathBuf::from)
-                    .collect()
+                    .ok_or_else(|| "Invalid manifest path".into())
             })
+            .collect::<Result<_, _>>()
+            .map(Some)
     } else {
-        None
+        // If `cargo metadata` fails, it's probably because we're not in a valid workspace.
+        Ok(None)
     }
 }
 
@@ -118,7 +122,9 @@ fn main() {
 
     announce(&banner);
 
-    let dirs = find_workspaces().unwrap_or_else(find_crates);
+    let dirs = find_workspaces()
+        .expect("Failed to get workspace members")
+        .unwrap_or_else(find_crates);
 
     let display_path = |p: &PathBuf| println!("{}:", p.to_string_lossy());
     let execute = |p: PathBuf| cargo_cmd.current_dir(p).output().ok();
