@@ -2,13 +2,13 @@
 extern crate clap;
 extern crate walkdir;
 extern crate toml;
+extern crate serde_json;
 
 use std::env;
-use std::fs::File;
-use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::error::Error;
+use std::path::PathBuf;
 use std::process::{exit, Command};
-use clap::{App, SubCommand, AppSettings};
+use clap::{App, AppSettings, SubCommand};
 use walkdir::{DirEntry, WalkDirIterator};
 
 
@@ -20,27 +20,33 @@ fn announce(banner: &str) {
     println!("{}\n{}\n{}", line, banner, line);
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
-    File::open(path)
-        .and_then(|mut f| {
-            let mut t = String::new();
-            f.read_to_string(&mut t).map(|_| t)
-        })
-        .ok()
-}
+fn find_workspaces() -> Result<Option<Vec<PathBuf>>, Box<Error>> {
+    let output = Command::new(CARGO)
+        .args(&["metadata", "--no-deps", "-q", "--format-version", "1"])
+        .output()?;
 
-fn find_workspaces() -> Option<Vec<PathBuf>> {
-    if let Some(ref toml) = read_file("Cargo.toml").and_then(|t| t.parse::<toml::Value>().ok()) {
-        toml.lookup("workspace.members")
-            .and_then(|w| w.as_slice())
-            .map(|v| {
-                v.into_iter()
-                    .filter_map(|s| s.as_str())
+    if output.status.success() {
+        let metadata: serde_json::Value =
+            serde_json::from_str(&String::from_utf8_lossy(&output.stdout))?;
+
+
+        let workspace_members = metadata["packages"]
+            .as_array()
+            .ok_or("No packages in workspace")?;
+
+        workspace_members
+            .iter()
+            .map(|package| {
+                package["manifest_path"]
+                    .as_str()
                     .map(PathBuf::from)
-                    .collect::<Vec<_>>()
+                    .ok_or_else(|| "Invalid manifest path".into())
             })
+            .collect::<Result<_, _>>()
+            .map(Some)
     } else {
-        None
+        // If `cargo metadata` fails, it's probably because we're not in a valid workspace.
+        Ok(None)
     }
 }
 
@@ -82,7 +88,10 @@ fn generate_cargo_cmd(path: &PathBuf, commands: &[String], use_manifest: bool) -
 
         // Insert the manifest-path option so that any logs about files are relative
         // to the current directory.
-        cargo_cmd.arg(format!("--manifest-path={}/Cargo.toml", full_path.to_string_lossy()));
+        cargo_cmd.arg(format!(
+            "--manifest-path={}/Cargo.toml",
+            full_path.to_string_lossy()
+        ));
     } else {
         cargo_cmd.current_dir(path);
     }
@@ -102,19 +111,23 @@ fn main() {
         .about("Run cargo command on multiple crates")
         .setting(AppSettings::SubcommandRequired)
         .setting(AppSettings::ArgRequiredElseHelp)
-        .subcommand(SubCommand::with_name("multi")
-            .version(crate_version!())
-            .setting(AppSettings::ArgRequiredElseHelp)
-            .setting(AppSettings::TrailingVarArg)
-
-            .arg_from_usage("--manifest  'Adds --manifest-path to command to run'")
-            .arg_from_usage("<cmd>... 'cargo command to run'"))
+        .subcommand(
+            SubCommand::with_name("multi")
+                .version(crate_version!())
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::TrailingVarArg)
+                .arg_from_usage("--manifest  'Adds --manifest-path to command to run'")
+                .arg_from_usage("<cmd>... 'cargo command to run'"),
+        )
         .get_matches();
 
-    let multi_subcommand = matches.subcommand_matches("multi").expect("multi command was not provided");
+    let multi_subcommand = matches
+        .subcommand_matches("multi")
+        .expect("multi command was not provided");
     let use_manifest = multi_subcommand.is_present("manifest");
 
-    let commands = multi_subcommand.values_of("cmd")
+    let commands = multi_subcommand
+        .values_of("cmd")
         .expect("No cargo commands provided")
         .map(|arg| arg.to_string())
         .collect::<Vec<_>>();
@@ -123,10 +136,16 @@ fn main() {
 
     announce(&banner);
 
-    let dirs = find_workspaces().unwrap_or_else(find_crates);
+    let dirs = find_workspaces()
+        .expect("Failed to get workspace members")
+        .unwrap_or_else(find_crates);
 
     let display_path = |p: &PathBuf| println!("\n{}:", p.to_string_lossy());
-    let execute = move |p: PathBuf| generate_cargo_cmd(&p, &commands, use_manifest).status().ok();
+    let execute = move |p: PathBuf| {
+        generate_cargo_cmd(&p, &commands, use_manifest)
+            .status()
+            .ok()
+    };
 
     let failed_commands = dirs.into_iter()
         .inspect(display_path)
