@@ -20,6 +20,7 @@ fn announce(banner: &str) {
     println!("{}\n{}\n{}", line, banner, line);
 }
 
+/// Get a list of the directories containing each of the packages in the workspace.
 fn find_workspaces() -> Result<Option<Vec<PathBuf>>, Box<Error>> {
     let output = Command::new(CARGO)
         .args(&["metadata", "--no-deps", "-q", "--format-version", "1"])
@@ -39,6 +40,7 @@ fn find_workspaces() -> Result<Option<Vec<PathBuf>>, Box<Error>> {
             .map(|package| {
                 package["manifest_path"]
                     .as_str()
+                    .map(|manifest| manifest.trim_right_matches("Cargo.toml"))
                     .map(PathBuf::from)
                     .ok_or_else(|| "Invalid manifest path".into())
             })
