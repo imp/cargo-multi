@@ -34,6 +34,15 @@ fn report_output(output: &Output) {
     println!("");
 }
 
+fn load_file<P: AsRef<Path>>(path: P) -> Option<toml::Value> {
+    let mut text = String::new();
+    let f = File::open(path);
+    if f.is_ok() {
+        f.unwrap().read_to_string(&mut text);
+    }
+    text.parse::<toml::Value>().ok()
+}
+
 fn read_file<P: AsRef<Path>>(path: P) -> Option<String> {
     File::open(path)
         .and_then(|mut f| {
